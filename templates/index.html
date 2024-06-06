@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Webcam and Latest Image Viewer</title>
+    <style>
+        .container {
+            display: flex;
+            align-items: flex-start; /* Align items at the start of the container */
+        }
+        .video-feed {
+            width: 80%;  /* Adjust this value to change the video size */
+            height: auto;
+        }
+        .webcam, .latest-img {
+            margin-right: 10px; /* Adds some space between the webcam and the image */
+            height: 100%; /* Ensure both titles have the same height */
+        } 
+        img {
+            display: flex;
+            max-width: 75%; /* Makes image responsive */
+            height: auto;
+        }
+        .gif-container {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: normal;    
+        }
+        .gif-item {
+            margin: 10px;
+        }
+        .gif-item img {
+            width: 200px;  /* Adjust this value to change the GIF size */
+            height: auto;
+        }
+    </style>
+    <script>
+        function updateGifs() {
+            fetch('/refresh_gifs')
+                .then(response => response.json())
+                .then(data => {
+                    let container = document.querySelector('.gif-container');
+                    container.innerHTML = '';  // Clear the container
+                    for (let file of data.files) {
+                        let item = document.createElement('div');
+                        item.className = 'gif-item';
+                        let img = document.createElement('img');
+                        img.src = "{{ url_for('gifs', filename='') }}" + file;
+                        img.alt = file;
+                        item.appendChild(img);
+                        container.appendChild(item);
+                    }
+                });
+        }
+
+        setInterval(updateGifs, 5000);  // Update every 5 seconds
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="webcam">
+            <h1 style="font-size: 24px; margin: 0;">Live Webcam Feed</h1>
+            <img src="{{ url_for('video_feed') }}" alt="Video Feed", width="800" height="800" />
+        </div>
+        <div class="latest-img">
+            <h2 style="font-size: 24px; margin: 0;">Latest Gif</h2>
+            <img id="latestImg" src="/latest-image" alt="Latest Image">
+        </div>
+    </div>
+
+    <script>
+        function updateImage() {
+            const img = document.getElementById('latestImg');
+            const timestamp = new Date().getTime(); // Prevents caching
+            img.src = `/latest-image?${timestamp}`;
+        }
+        setInterval(updateImage, 5000); // Update every 5 seconds
+    </script>
+
+
+    <h1 style="font-size: 24px; margin: 0;">GIF Files</h1>
+    <div class="gif-container">
+
+    </div>
+</body>
+</html>
